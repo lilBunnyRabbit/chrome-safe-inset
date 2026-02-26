@@ -1,31 +1,64 @@
 # chrome-safe-inset
 
-Quick experiment to test CSS `safe-area-inset-*` properties in Chrome. Uses the experimental CDP `setSafeAreaInsetsOverride` method to override safe area insets on the fly.
+Test CSS `safe-area-inset-*` properties in Chrome using the experimental CDP `setSafeAreaInsetsOverride` method.
 
 There aren't really any other free tools that let you do this easily. Hopefully this gets built into DevTools soon, but for now this works.
+
+## Installation
+
+```sh
+bun install
+chmod +x src/index.ts
+bun link
+```
 
 ## Usage
 
 ```sh
-bun install
-chmod +x index.ts
-bun link chrome-safe-inset
-chrome-safe-inset
+chrome-safe-inset [profile-name] [--verbose] [--no-viewport]
 ```
 
-Then enter values like `50` (applies to all sides) or `top bottom left right` (space-separated values). Enter `0` to disable.
+### Commands
+
+| Command | Description |
+| --- | --- |
+| `<number>` | Apply uniform inset to all sides (`0` to disable) |
+| `<t> <b> <l> <r> [...]` | Apply individual insets |
+| `presets` | List available device presets |
+| `<preset-name>` | Apply a device preset (insets + viewport) |
+| `screenshot [name]` | Save a screenshot as PNG |
+| `screenshot copy` | Copy screenshot to clipboard |
+| `help` | Show usage information |
+| `quit` / `exit` | Close Chrome and exit |
+
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--verbose` | Show Chrome browser output |
+| `--no-viewport` | Don't override viewport when applying presets |
+
+### Environment Variables
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `CHROME_BIN` | Path to Chrome binary | `google-chrome` |
+| `CDP_PORT` | Chrome DevTools Protocol port | `9222` |
+
+### Device Presets
+
+When a preset is applied, both the safe area insets and viewport dimensions are set to match the device. Use `--no-viewport` to only apply insets without changing the viewport.
 
 ## Visual Overlay
 
-The tool automatically injects a visual overlay frame into each page to help you see where the safe area insets are applied. The overlay:
+The tool automatically injects a visual overlay into each page to show where the safe area insets are applied. The overlay:
 
 - Shows a low-opacity red border (`#ff00001a`) around the safe area boundaries
 - Uses CSS `env()` functions to automatically reflect the current safe area inset values
-- Is positioned absolutely and doesn't interfere with page interaction (`pointer-events: none`)
-- Updates automatically when you change the inset values
+- Doesn't interfere with page interaction (`pointer-events: none`)
+- Persists across page navigations
 
-You can toggle the overlay on/off using the browser console:
-- `window.showInsetOverlay()` - Show the overlay
-- `window.hideInsetOverlay()` - Hide the overlay
+Toggle the overlay via the browser console:
 
-The overlay makes it easy to visualize how your content will be affected by safe area insets, especially useful for testing responsive designs and mobile layouts.
+- `window.showInsetOverlay()` — Show the overlay
+- `window.hideInsetOverlay()` — Hide the overlay
