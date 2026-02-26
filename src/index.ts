@@ -8,8 +8,11 @@ import { dim, boldCyan } from "./style";
 
 let chromeProc: ReturnType<typeof Bun.spawn> | null = null;
 let cdpClient: CdpClient | null = null;
+let shuttingDown = false;
 
 function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   console.log(dim("\nShutting down..."));
 
   if (cdpClient) {
@@ -69,5 +72,7 @@ chromeProc = Bun.spawn(
 
 pipeStream(chromeProc.stdout);
 pipeStream(chromeProc.stderr);
+
+chromeProc.exited.then(() => shutdown());
 
 cdpClient = await connect({ onShutdown: shutdown });
