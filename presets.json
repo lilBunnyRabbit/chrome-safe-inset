@@ -1,0 +1,173 @@
+{
+  "iphone-x-portrait": {
+    "name": "iPhone X / XS / 11 Pro (Portrait)",
+    "description": "5.8\" display with notch",
+    "viewport": {
+      "width": 375,
+      "height": 812
+    },
+    "insets": {
+      "top": 44,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 209,
+      "height": 30,
+      "borderRadius": 18
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-x-landscape": {
+    "name": "iPhone X / XS / 11 Pro (Landscape)",
+    "description": "5.8\" display with notch",
+    "viewport": {
+      "width": 812,
+      "height": 375
+    },
+    "insets": {
+      "top": 0,
+      "bottom": 21,
+      "left": 44,
+      "right": 44
+    },
+    "notch": {
+      "width": 209,
+      "height": 30,
+      "borderRadius": 18
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-xr-portrait": {
+    "name": "iPhone XR / 11 (Portrait)",
+    "description": "6.1\" display with notch",
+    "viewport": {
+      "width": 414,
+      "height": 896
+    },
+    "insets": {
+      "top": 44,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 209,
+      "height": 30,
+      "borderRadius": 18
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-12-portrait": {
+    "name": "iPhone 12 / 13 / 14 / 15 (Portrait)",
+    "description": "6.1\" display with notch",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "insets": {
+      "top": 47,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 187,
+      "height": 33,
+      "borderRadius": 19
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-12-pro-max-portrait": {
+    "name": "iPhone 12/13/14/15 Pro Max (Portrait)",
+    "description": "6.7\" display with notch",
+    "viewport": {
+      "width": 428,
+      "height": 926
+    },
+    "insets": {
+      "top": 47,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 187,
+      "height": 33,
+      "borderRadius": 19
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-14-pro-portrait": {
+    "name": "iPhone 14 Pro / 15 Pro (Portrait)",
+    "description": "6.1\" display with Dynamic Island",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "insets": {
+      "top": 59,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 126,
+      "height": 37,
+      "borderRadius": 19,
+      "type": "dynamicIsland"
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  },
+  "iphone-14-pro-max-portrait": {
+    "name": "iPhone 14 Pro Max / 15 Pro Max (Portrait)",
+    "description": "6.7\" display with Dynamic Island",
+    "viewport": {
+      "width": 428,
+      "height": 926
+    },
+    "insets": {
+      "top": 59,
+      "bottom": 34,
+      "left": 0,
+      "right": 0
+    },
+    "notch": {
+      "width": 126,
+      "height": 37,
+      "borderRadius": 19,
+      "type": "dynamicIsland"
+    },
+    "homeIndicator": {
+      "width": 134,
+      "height": 5,
+      "borderRadius": 2.5
+    }
+  }
+}
+
