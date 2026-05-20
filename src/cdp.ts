@@ -1,6 +1,9 @@
 import { createInterface } from "readline";
+import { unlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import CDP from "chrome-remote-interface";
-import { PORT, OVERLAY_SCRIPT, NO_VIEWPORT } from "./config";
+import { OVERLAY_SCRIPT, NO_VIEWPORT } from "./config";
 import { presetMap, presetNames, printPresets, parseInsets } from "./presets";
 import { dim, bold, cyan, green, red } from "./style";
 import type { Preset, SafeAreaInsets } from "./types";
@@ -27,13 +30,53 @@ ${cmd("help", "Show this help message")}
 ${cmd("quit / exit", "Close Chrome and exit")}
 
 ${bold("Environment variables:")}
-${env("CHROME_BIN", "Path to Chrome binary", "google-chrome")}
+${env("CHROME_BIN", "Path to Chrome binary", "auto-detected")}
 ${env("CDP_PORT", "DevTools Protocol port", "9222")}
 
 ${bold("Flags:")}
 ${flag("--verbose", "Show Chrome browser output")}
 ${flag("--no-viewport", "Don't override viewport when applying presets")}
 `);
+}
+
+/**
+ * Copies a PNG buffer to the OS clipboard.
+ * Returns an error message on failure, or null on success.
+ */
+async function copyImageToClipboard(buffer: Buffer): Promise<string | null> {
+  const run = async (cmd: string[], stdin?: Blob) => {
+    try {
+      const proc = Bun.spawn(cmd, stdin ? { stdin } : undefined);
+      await proc.exited;
+      return proc.exitCode === 0;
+    } catch {
+      return false;
+    }
+  };
+
+  if (process.platform === "darwin") {
+    const tmp = join(tmpdir(), `chrome-safe-inset-${Date.now()}.png`);
+    await Bun.write(tmp, buffer);
+    const script = `set the clipboard to (read (POSIX file ${JSON.stringify(tmp)}) as «class PNGf»)`;
+    const ok = await run(["osascript", "-e", script]);
+    await unlink(tmp).catch(() => {});
+    return ok ? null : "Failed to copy to clipboard via osascript";
+  }
+
+  if (process.platform === "win32") {
+    const tmp = join(tmpdir(), `chrome-safe-inset-${Date.now()}.png`);
+    await Bun.write(tmp, buffer);
+    const ps = `Add-Type -AssemblyName System.Windows.Forms,System.Drawing; [System.Windows.Forms.Clipboard]::SetImage([System.Drawing.Image]::FromFile('${tmp}'))`;
+    const ok = await run(["powershell", "-NoProfile", "-Command", ps]);
+    await unlink(tmp).catch(() => {});
+    return ok ? null : "Failed to copy to clipboard via PowerShell";
+  }
+
+  // Linux: X11 (xclip) or Wayland (wl-copy)
+  const blob = new Blob([buffer]);
+  if (await run(["xclip", "-selection", "clipboard", "-t", "image/png"], blob)) return null;
+  if (await run(["wl-copy", "--type", "image/png"], blob)) return null;
+  return "Failed to copy — install xclip (X11) or wl-clipboard (Wayland)";
 }
 
 interface CdpSessionOptions {
@@ -44,12 +87,15 @@ interface CdpSessionOptions {
  * Connects to Chrome via CDP and runs the interactive input loop.
  * Returns the CDP client for external cleanup.
  */
-async function startSession({ onShutdown }: CdpSessionOptions) {
+async function startSession(port: number, { onShutdown }: CdpSessionOptions) {
   console.log(dim("Connecting to Chrome..."));
 
-  const client = await CDP({ port: PORT });
+  // Pin to IPv4: Chrome's debugging server listens on 127.0.0.1, but "localhost"
+  // can resolve to ::1 first (common on macOS), connecting us to nothing — or to
+  // a different Chrome that grabbed the IPv6 port.
+  const client = await CDP({ host: "127.0.0.1", port });
   const { Emulation, Runtime, Page } = client;
-  console.log(dim(`Connected on port ${PORT}`));
+  console.log(dim(`Connected on port ${port}`));
 
   // Register overlay so it persists across navigations
   await Page.enable();
@@ -103,14 +149,11 @@ async function startSession({ onShutdown }: CdpSessionOptions) {
           const buffer = Buffer.from(data, "base64");
 
           if (arg === "copy") {
-            const proc = Bun.spawn(["xclip", "-selection", "clipboard", "-t", "image/png"], {
-              stdin: new Blob([buffer]),
-            });
-            await proc.exited;
-            if (proc.exitCode === 0) {
-              console.log(green("Copied to clipboard"));
+            const error = await copyImageToClipboard(buffer);
+            if (error) {
+              console.error(red(error));
             } else {
-              console.error(red("Failed to copy — is xclip installed?"));
+              console.log(green("Copied to clipboard"));
             }
           } else {
             const name = arg || `screenshot-${Date.now()}`;
@@ -178,10 +221,10 @@ async function startSession({ onShutdown }: CdpSessionOptions) {
 /**
  * Attempts to connect to CDP with exponential backoff.
  */
-export async function connect(options: CdpSessionOptions, maxRetries = 10, initialDelay = 500) {
+export async function connect(port: number, options: CdpSessionOptions, maxRetries = 10, initialDelay = 500) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await startSession(options);
+      return await startSession(port, options);
     } catch {
       if (attempt === maxRetries) {
         console.error(red(`Failed to connect after ${maxRetries} attempts.`));
